@@ -41,10 +41,10 @@ class FieldResults
 
     getCPU: =>
         REGISTER: @parseRawResult 9, 0
-        ADDER:    @parseRawResult 9, 1
-        MUX:      @parseRawResult 9, 2
+        InstAdd:  @parseRawResult 9, 1
+        InstMux:  @parseRawResult 9, 2
         InstDec:  @parseRawResult 9, 3
-        MEM:      @parseRawResult 9, 4
+        Mem8Bit:  @parseRawResult 9, 4
         AddDec:   @parseRawResult 9, 5
 
     parseRawResult: (index, sub)=>

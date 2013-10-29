@@ -52,24 +52,63 @@ class MatchScore
                 NOT: 1
             NAND: 1
         REGISTER:
-            DLATCH: 1
+            DLATCH:   1
         InstDec:
-            DECODER: 1
+            DECODER:  1
         InstMux:
-            MUX: 1
+            MUX:      1
         InstAdd:
-            ADDER: 1
+            ADDER:    1
         Mem8Bit:
-            DLATCH: 1
+            DLATCH:   1
         Mem32Bit:
-            DLATCH: 4
-            DECODER: 1
+            DLATCH:   4
+            DECODER:  1
+        CPU32Bit:
+            DLATCH:   7
+            DECODER:  2
+            ADDER:    1
+            MUX:      1
+        CPU8Bit:
+            DLATCH:   4
+            DECODER:  1
+            ADDER:    1
+            MUX:      1
+
+    @cpuFieldRequirements:
+        CPU32Bit:
+            InstDec:  1
+            InstAdd:  1
+            InstMux:  1
+            REGISTER: 3
+            AddDec:   1
+            Mem8Bit:  4
+        CPU8Bit:
+            InstDec:  1
+            InstAdd:  1
+            InstMux:  1
+            REGISTER: 3
+            Mem8Bit:  1
+        Mem32Bit:
+            Mem8Bit:  4
+            AddDec:   1
+        Mem8Bit:
+            Mem8Bit:  1
+        InstAdd:
+            InstAdd:  1
+        InstMux:
+            InstMux:  1
+        InstDec:
+            InstDec:  1
+        REGISTER:
+            REGISTER: 1
 
     scoreWithInventory: (@inventory)->
         @total = 0
         @scoreGates()
         @scoreICs()
         @scoreCPU()
+        @total
 
     scoreGates: =>
         @scoreNormalGate gate for gate in ["AND", "OR", "NOT"]
@@ -79,17 +118,25 @@ class MatchScore
         @scoreIC IC for IC in ["MUX", "ADDER", "DECODER", "DLATCH"]
 
     scoreCPU: =>
+        @scoreCPUcomponent component for component in ["CPU32Bit", "CPU8Bit", "Mem32Bit", "Mem8Bit", "REGISTER", "InstDec", "InstMux", "InstAdd"]
+
+    scoreCPUcomponent: (component)=>
+        numComponents = @timesMetRequirements component
+        @addToInventory component, numComponents
+        @total += MatchScore.values[component]*numComponents
 
     scoreNormalGate: (gate)=>
         numGates = 4*@FieldResults[gate].P.U
         numGates += 2*@FieldResults[gate].P.L
         numGates += 2*@FieldResults[gate].N.U
         numGates += @FieldResults[gate].N.L
+        @addToInventory gate, numGates
         @total += MatchScore.values[gate]*numGates
 
     scoreNandGate: =>
         numGates = 2*@FieldResults.NAND.P
         numGates += @FieldResults.NAND.N
+        @addToInventory "NAND", numGates
         @total += MatchScore.values.NAND*numGates
 
     scoreIC: (IC)=>
@@ -104,32 +151,64 @@ class MatchScore
         timesMet = 0
         reqs = MatchScore.requirements[unit]
         if reqs.Normal? # unit is an IC
-            metNormalReqs = true
-            while metNormalReqs
-                for gate of reqs.Normal
-                    unless @FieldResults[unit][gate] >= reqs.Normal[gate]
-                        metNormalReqs = false
-                        break
-                if metNormalReqs and @inventoryContains reqs.Normal
-                    timesMet += 1
-                    for gate of reqs.Normal
-                        @inventory[gate] -= reqs.Normal[gate]
-            metNandReqs = true
-            while metNandReqs
-                unless @FieldResults[unit][NAND] >= reqs.NAND
-                    metNandReqs = false
-                if metNandReqs and @inventoryContains reqs
-                    timesMet += 1
-                    @inventory[NAND] -= reqs.NAND
+            @timesMetRequirementsIC unit
         else #unit is a CPU component
-            timesMet = 0
+            @timesMetRequirementsCPU unit
 
         return timesMet
 
+    timesMetRequirementsIC: (unit)=>
+        metNormalReqs = true
+        while metNormalReqs
+            for gate of reqs.Normal
+                unless ((@FieldResults[unit][gate] >= reqs.Normal[gate]) and @inventoryContains reqs.Normal)
+                    metNormalReqs = false
+                    break
+            if metNormalReqs
+                timesMet += 1
+                for gate of reqs.Normal
+                    @inventory[gate] -= reqs.Normal[gate]
+                    @FieldResults[unit][gate] -= reqs.Normal[gate]
+                @addToInventory unit, 1
+        metNandReqs = true
+        while metNandReqs
+            unless ((@FieldResults[unit].NAND >= reqs.NAND) and @inventoryContains reqs)
+                metNandReqs = false
+                break
+            if metNandReqs
+                timesMet += 1
+                @inventory.NAND -= reqs.NAND
+                @FieldResults[unit].NAND -= reqs.NAND
+                @addToInventory unit, 1
+
+    timesMetRequirementsCPU: (unit)=>
+        metReqs = true
+        fieldReqs = MatchScore.cpuFieldRequirements[unit]
+        inventoryReqs = MatchScore.requirements[unit]
+        while metReqs
+            for subReq of fieldReqs
+                unless ((@FieldResults.CPU[unit][subReq] >= fieldReqs[subReq]) and @inventoryContains inventoryReqs)
+                    metReqs = false
+                    break
+            if metReqs
+                timesMet += 1
+                for subReq of fieldReqs
+                    @FieldResults.CPU[unit][subReq] -= fieldReqs[subReq]
+                for subReq of inventoryReqs
+                    @inventory[subReq] -= inventoryReqs[subReq]
+                @addToInventory unit, 1
+
     inventoryContains: (quantities)=>
         for req of quantities
-            continue if req is "Normal"
-            return false if @inventory[req] < quantities[req]
+            return false unless @inventory[req]? and @inventory[req] >= quantities[req] or req is "Normal"
         return true
+
+    addToInventory: (unit, number)=>
+        unless @inventory?
+            @inventory = {}
+        if @inventory[unit]?
+            @inventory[unit] += number
+        else
+            @inventory[unit] = number
 
 module.exports = MatchScore
