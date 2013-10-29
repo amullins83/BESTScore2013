@@ -4,19 +4,26 @@ MatchScore = require __dirname + "/../match_score"
 
 describe "MatchScore", ->
 
-    describe "constructor", ->
-        beforeEach ->
+    beforeEach ->
             @sc = new ScoreCalculator __dirname + "/testFile.sco"
             waitsFor ->
                 @sc.done or @sc.err
-            , "timeout while parsing test file", 2000
+            , "timeout while parsing test file", 5000
+            runs ->
+                expect(@sc.err).toBeFalsy()
 
+    afterEach ->
+        runs ->
+            delete @sc
+
+    describe "constructor", ->
+        beforeEach ->
             runs ->
                 @ms = new MatchScore @sc.scores.Array.Cluster[17]
         
         afterEach ->
-            delete @ms
-            delete @sc
+            runs ->
+                delete @ms
 
         it "returns an Object", ->
             runs -> 
@@ -28,15 +35,9 @@ describe "MatchScore", ->
 
     describe "score with inventory", ->
 
-        beforeEach ->
-            @sc = new ScoreCalculator __dirname + "/testFile.sco"
-            waitsFor ->
-                @sc.done or @sc.err
-            , "timeout while parsing test file", 2000
-
         afterEach ->
-            delete @ms
-            delete @sc
+            runs ->
+                delete @ms
 
         it "scores a set of gates correctly", ->
             runs ->
@@ -50,7 +51,8 @@ describe "MatchScore", ->
                     @ms = new MatchScore @sc.scores.Array.Cluster[7]
 
             afterEach ->
-                delete @ms
+                runs ->
+                    delete @ms
 
             it "when inventory is insufficient", ->
                 runs ->
@@ -75,7 +77,8 @@ describe "MatchScore", ->
                     @ms = new MatchScore @sc.scores.Array.Cluster[17]
 
             afterEach ->
-                delete @ms
+                runs ->
+                    delete @ms
 
             it "when inventory is insufficient", ->
                 runs ->
@@ -101,11 +104,12 @@ describe "MatchScore", ->
 
                 beforeEach ->
                     runs ->
-                    @ms = new MatchScore @sc.scores.Array.Cluster[7]
-                    @ms.scoreWithInventory { NAND: 2 }
+                        @ms = new MatchScore @sc.scores.Array.Cluster[7]
+                        @ms.scoreWithInventory { NAND: 2 }
 
                 afterEach ->
-                    delete @ms
+                    runs ->
+                        delete @ms
 
                 it "reduces the number of gates", ->
                     expect(@ms.inventory.NAND).toBe 0
@@ -117,11 +121,12 @@ describe "MatchScore", ->
 
                 beforeEach ->
                     runs ->
-                    @ms = new MatchScore @sc.scores.Array.Cluster[17]
-                    @ms.scoreWithInventory { DLATCH: 4, DECODER: 2, MUX: 1, ADDER: 1 }
+                        @ms = new MatchScore @sc.scores.Array.Cluster[17]
+                        @ms.scoreWithInventory { DLATCH: 4, DECODER: 2, MUX: 1, ADDER: 1 }
 
                 afterEach ->
-                    delete @ms
+                    runs ->
+                        delete @ms
 
                 it "reduces the number of ICs", ->
                     expect(@ms.inventory.DLATCH).toBe 0
