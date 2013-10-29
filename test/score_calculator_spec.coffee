@@ -47,4 +47,62 @@ describe "ScoreCalculator", ->
         it "contains an array of MatchScore objects", ->
             runs ->
                 expect(@sc.matches[0].constructor).toBe MatchScore
-            
+    
+    describe "find match by team and round", ->
+        beforeEach ->
+            runs ->
+                @sc.getMatches()
+
+        it "returns matches[0] for team 3 round 1", ->
+            runs ->
+                expect(@sc.findMatchByTeamAndRound 3, 1).toEqual @sc.matches[0]
+
+        it "returns matches[17] for team 1 round 6", ->
+            runs ->
+                expect(@sc.findMatchByTeamAndRound 1, 6).toEqual @sc.matches[17]
+
+    describe "getInventory", ->
+        beforeEach ->
+            runs ->
+                @sc_cpu = new ScoreCalculator __dirname + "/cpu32.sco"
+
+            waitsFor ->
+                @sc_cpu.done or @sc_cpu.err
+            , "Failed to parse file", @millis
+
+            runs ->
+                @sc_cpu.getMatches()
+                @sc_cpu.getInventory()
+
+        it "defines an inventory object for each element of matches", ->
+            runs ->
+                expect(@sc_cpu.matches[@sc_cpu.matches.length - 1].inventory).toBeDefined()
+
+        it "produces the correct inventory for the first round", ->
+            runs ->
+                expect(@sc_cpu.matches[1].inventory.NAND).toBe 120
+
+        it "produces the correct inventory for the second match", ->
+            runs ->
+                expect(@sc_cpu.matches[7].inventory.ADDER).toEqual 2
+
+        it "produces the correct inventory for the last match", ->
+            runs ->
+                expect(@sc_cpu.matches[8].inventory.CPU32Bit).toEqual 1
+
+    describe "getScores", ->
+        beforeEach ->
+            runs ->
+                @sc_cpu = new ScoreCalculator __dirname + "/cpu32.sco"
+
+            waitsFor ->
+                @sc_cpu.done or @sc_cpu.err
+            , "Failed to parse file", @millis
+
+            runs ->
+                @sc_cpu.calculate()
+
+        it "agrees with the Tournament Software", ->
+            runs ->
+                expect(@sc_cpu.teamScore[1]).toBe 4505.6
+

@@ -42,7 +42,7 @@ describe "MatchScore", ->
         it "scores a set of gates correctly", ->
             runs ->
                 @ms = new MatchScore @sc.scores.Array.Cluster[0]
-                expect(@ms.scoreWithInventory {}).toEqual 88
+                expect(@ms.scoreWithInventory {}).toEqual 184
 
         describe "scores a set of ICs correctly", ->
 
@@ -98,7 +98,7 @@ describe "MatchScore", ->
                 runs ->
                     @ms = new MatchScore @sc.scores.Array.Cluster[0]
                     @ms.scoreWithInventory {}
-                    expect(@ms.inventory.NAND).toBe 6
+                    expect(@ms.inventory.NAND).toBe 18
 
             describe "when making ICs", ->
 

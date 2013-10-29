@@ -8,6 +8,7 @@ class MatchScore
         @Tiebreak = @raw_match.U16[0].Val == '1'
         @CurrentMatchPhase = ["Seeding", "WildCard", "Semifinal", "Final"][parseInt @raw_match.U16[1].Val]
         @FieldResults = new FieldResults @raw_match.Cluster[1].Cluster
+        @Bonus = @FieldResults.Bonus
 
     @values:
         AND:        10
@@ -134,17 +135,13 @@ class MatchScore
         @total += MatchScore.values[gate]*numGates
 
     scoreNandGate: =>
-        numGates = 2*@FieldResults.NAND.P
-        numGates += @FieldResults.NAND.N
+        numGates = 6*@FieldResults.NAND.P
+        numGates += 3*@FieldResults.NAND.N
         @addToInventory "NAND", numGates
         @total += MatchScore.values.NAND*numGates
 
     scoreIC: (IC)=>
         numICs = @timesMetRequirements IC
-
-        unless @FieldResults[IC].Lower
-            numICs *= 2
-
         @total += MatchScore.values[IC]*numICs
 
     timesMetRequirements: (unit)=>
@@ -164,21 +161,29 @@ class MatchScore
                     metNormalReqs = false
                     break
             if metNormalReqs
-                timesMet += 1
                 for gate of reqs.Normal
                     @inventory[gate] -= reqs.Normal[gate]
                     @FieldResults[unit][gate] -= reqs.Normal[gate]
-                @addToInventory unit, 1
+                if @FieldResults[unit].Lower
+                    number = 1
+                else
+                    number = 2
+                @addToInventory unit, number
+                timesMet += number
         metNandReqs = true
         while metNandReqs
             unless ((@FieldResults[unit].NAND >= reqs.NAND) and @inventoryContains reqs)
                 metNandReqs = false
                 break
             if metNandReqs
-                timesMet += 1
                 @inventory.NAND -= reqs.NAND
                 @FieldResults[unit].NAND -= reqs.NAND
-                @addToInventory unit, 1
+                if @FieldResults[unit].Lower
+                    number = 1
+                else
+                    number = 2
+                @addToInventory unit, number
+                timesMet += number
         return timesMet
 
     timesMetRequirementsCPU: (unit)=>
