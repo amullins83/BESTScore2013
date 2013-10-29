@@ -1,0 +1,20 @@
+{
+    "name": "BESTScore2013",
+    "version": "0.0.1",
+    "private": true,
+    "engines": {
+        "node": "0.8.x",
+        "npm": "1.2.x"
+    },
+    "dependencies": {
+        "coffee-script":"*",
+        "xml-simple":"*"
+    },
+    "scripts": {
+        "test": "coffee test/test_score_calculator.coffee"
+    },
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/amullins83/BESTScore2013.git"
+    }
+}
