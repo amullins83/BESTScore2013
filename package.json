@@ -10,8 +10,11 @@
         "coffee-script":"*",
         "xml-simple":"*"
     },
+    "devDependencies": {
+        "jasmine-node": "*"
+    },
     "scripts": {
-        "test": "coffee test/test_score_calculator.coffee"
+        "test": "jasmine-node --coffee test"
     },
     "repository": {
         "type": "git",

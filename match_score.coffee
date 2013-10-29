@@ -123,7 +123,6 @@ class MatchScore
 
     scoreCPUcomponent: (component)=>
         numComponents = @timesMetRequirements component
-        @addToInventory component, numComponents
         @total += MatchScore.values[component]*numComponents
 
     scoreNormalGate: (gate)=>
