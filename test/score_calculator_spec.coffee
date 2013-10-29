@@ -1,19 +1,31 @@
 ScoreCalculator = require __dirname + "/../score_calculator"
 
 describe "ScoreCalculator", ->
-    
-    describe "Parse", ->
-        it "should be callable", ->
-            runs ->
-                ScoreCalculator.parse __dirname + "/testFile.sco"
+    beforeEach ->
+        @sc = new ScoreCalculator(__dirname + "/testFile.sco")
+        @millis = 2000
+
+    afterEach ->
+        delete @sc
+
+    describe "constructor", ->
+        it "should return a calculator", ->
+            expect(@sc).toBeDefined()
+
+        it "should complete a parse operation", ->
+            waitsFor( ->
+                @sc.done or @sc.err
+            , "Parse operation did not complete in #{@millis} ms", @millis)
 
             runs ->
-                expect true
-    
-    describe "Score", ->
-        it "should be callable", ->
+                expect(@sc.err).toBe(null)
+
+    describe "parse", ->
+        it "saves a js object to property 'scores'", ->
+            waitsFor( ->
+                @sc.done or @sc.err
+            , "Parse operation did not complete in #{@millis} ms", @millis)
+
             runs ->
-                ScoreCalculator.score __dirname + "/testFile.sco"
+                expect(@sc.scores).toBeDefined()
             
-            runs ->
-                expect true

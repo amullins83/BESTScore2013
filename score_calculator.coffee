@@ -1,17 +1,41 @@
 fs = require "fs"
 XML = require "xml-simple"
+MatchScore = require __dirname + "/match_score"
 
 class ScoreCalculator
-    @parse: (scoreFile, callback)->
-        fs.readFile scoreFile, (err, file)->
-            unless err
-                XML.parse file, callback
+    constructor: (@scoreFile)->
+        @done = false
+        @err = false
+        @parse()
 
-    @score: (scoreFile)->
-        @parse scoreFile, @calculate
+    parse: ->
+        fs.readFile @scoreFile, (@err, file)=>
+            unless @err
+                XML.parse file, @calculateOrError
+            else
+                @done = true
 
-    @calculate: (err, scores)->
-        unless err
-            console.dir scores
+    calculateOrError: (@err, @scores)=>
+        unless @err
+            @calculate()
+        else
+            console.dir @err
+        @done = true
+
+    calculate: =>
+        @getMatches()
+        @getInventory()
+        @getScores()
+
+    getMatches: =>
+        raw_matches = @scores.Array.Cluster
+        @matches = []
+        for raw_match in raw_matches
+            @matches.push new MatchScore raw_match
+        @matches
+
+    getInventory: =>
+
+    getScores: =>
 
 module.exports = ScoreCalculator
