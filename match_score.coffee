@@ -118,7 +118,8 @@ class MatchScore
         @scoreIC IC for IC in ["MUX", "ADDER", "DECODER", "DLATCH"]
 
     scoreCPU: =>
-        @scoreCPUcomponent component for component in ["CPU32Bit", "CPU8Bit", "Mem32Bit", "Mem8Bit", "REGISTER", "InstDec", "InstMux", "InstAdd"]
+        if @FieldResults.CPU?
+            @scoreCPUcomponent component for component in ["CPU32Bit", "CPU8Bit", "Mem32Bit", "Mem8Bit", "REGISTER", "InstDec", "InstMux", "InstAdd"]
 
     scoreCPUcomponent: (component)=>
         numComponents = @timesMetRequirements component
@@ -148,16 +149,15 @@ class MatchScore
         @total += MatchScore.values[IC]*numICs
 
     timesMetRequirements: (unit)=>
-        timesMet = 0
         reqs = MatchScore.requirements[unit]
         if reqs.Normal? # unit is an IC
-            @timesMetRequirementsIC unit
+            return @timesMetRequirementsIC unit
         else #unit is a CPU component
-            @timesMetRequirementsCPU unit
-
-        return timesMet
+            return @timesMetRequirementsCPU unit
 
     timesMetRequirementsIC: (unit)=>
+        timesMet = 0
+        reqs = MatchScore.requirements[unit]
         metNormalReqs = true
         while metNormalReqs
             for gate of reqs.Normal
@@ -180,23 +180,26 @@ class MatchScore
                 @inventory.NAND -= reqs.NAND
                 @FieldResults[unit].NAND -= reqs.NAND
                 @addToInventory unit, 1
+        return timesMet
 
     timesMetRequirementsCPU: (unit)=>
+        timesMet = 0
         metReqs = true
         fieldReqs = MatchScore.cpuFieldRequirements[unit]
         inventoryReqs = MatchScore.requirements[unit]
         while metReqs
             for subReq of fieldReqs
-                unless ((@FieldResults.CPU[unit][subReq] >= fieldReqs[subReq]) and @inventoryContains inventoryReqs)
+                unless ((@FieldResults.CPU[subReq] >= fieldReqs[subReq]) and @inventoryContains inventoryReqs)
                     metReqs = false
                     break
             if metReqs
                 timesMet += 1
                 for subReq of fieldReqs
-                    @FieldResults.CPU[unit][subReq] -= fieldReqs[subReq]
+                    @FieldResults.CPU[subReq] -= fieldReqs[subReq]
                 for subReq of inventoryReqs
                     @inventory[subReq] -= inventoryReqs[subReq]
                 @addToInventory unit, 1
+        return timesMet
 
     inventoryContains: (quantities)=>
         for req of quantities

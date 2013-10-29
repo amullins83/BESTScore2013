@@ -18,7 +18,7 @@ describe "ScoreCalculator", ->
             , "Parse operation did not complete in #{@millis} ms", @millis)
 
             runs ->
-                expect(@sc.err).toBe(null)
+                expect(@sc.err).toBeFalsy()
 
     describe "parse", ->
         it "saves a js object to property 'scores'", ->
