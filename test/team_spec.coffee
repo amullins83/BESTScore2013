@@ -73,3 +73,8 @@ describe "Team", ->
 
         it "returns the round number of the highest scoring round", ->
             expect(@t.bestRound()).toBe '1'
+
+    describe "bestScore", ->
+
+        it "returs the score of the highest scoring round", ->
+            expect(@t.bestScore()).toBe 100
