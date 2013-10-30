@@ -106,7 +106,7 @@ describe "ScoreCalculator", ->
 
             it "for final total", ->
                 runs ->
-                    expect(@sc_cpu.teamScore[1]).toBe 4505.6
+                    expect(@sc_cpu.teams[1].score).toBe 4505.6
 
             it "for first round", ->
                 runs ->

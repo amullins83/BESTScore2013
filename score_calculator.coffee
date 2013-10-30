@@ -1,6 +1,7 @@
 fs = require "fs"
 XML = require "xml-simple"
 MatchScore = require __dirname + "/match_score"
+Team = require __dirname + "/team"
 
 copy = (thing)->
     val = {}
@@ -35,11 +36,13 @@ class ScoreCalculator
     getMatches: =>
         raw_matches = @scores.Array.Cluster
         @matches = []
-        @teams = []
+        @teams = {}
         for raw_match, index in raw_matches
-            @matches.push new MatchScore raw_match
-            unless @matches[index].TeamNumber in @teams
-                @teams.push @matches[index].TeamNumber
+            this_match = new MatchScore raw_match
+            @matches.push this_match
+            num = this_match.TeamNumber
+            unless num of @teams
+                @teams[num] = new Team num
         @matches
 
     getInventory: =>
@@ -50,6 +53,7 @@ class ScoreCalculator
                 match.scoreWithInventory {}
             else
                 match.scoreWithInventory copy(@findMatchByTeamBeforeRound(team, round).inventory)
+            @teams[team].addRound match
 
     getScores: =>
         @getHighScoreMatch()
@@ -61,25 +65,8 @@ class ScoreCalculator
             @highScoreMatchIndex = index if match.total > @matches[@highScoreMatchIndex].total
 
     getTeamTotals: =>
-        @teamScore = {}
-        for team in @teams
-            @teamScore[team] = 0
-            for match in @matches
-                if match.TeamNumber == team
-                    @teamScore[team] += match.total
-            @applyBonus team
-
-    applyBonus: (team)=>
-        maxBonus = 0.1
-        totalRounds = 0
-        bonusRounds = 0
-        for match in @matches
-            if match.TeamNumber == team
-                totalRounds += 1
-                if match.Bonus
-                    bonusRounds += 1
-        if totalRounds > 0
-            @teamScore[team] *= 1 + maxBonus*bonusRounds/totalRounds
+        for num, team of @teams
+            team.applyBonus()
 
     findMatchByTeamBeforeRound: (team, round)=>
         while round > 0
