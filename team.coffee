@@ -35,4 +35,16 @@ class Team
             @bonusApplied = true
             @score *= 1 + maxBonus * @numBonusRounds()/@numRounds()
 
+    bestRound: =>
+        best = 0
+        bestNumber = null
+        for number, round of @rounds
+            if round.score > best
+                best = round.score
+                bestNumber = number
+        bestNumber
+
+    bestScore: =>
+        @rounds[@bestRound()].score
+
 module.exports = Team

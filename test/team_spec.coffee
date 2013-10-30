@@ -68,4 +68,8 @@ describe "Team", ->
         it "only works once", ->
             @t.applyBonus()
             expect(@t.score).toBe 157.5
-            
+    
+    describe "bestRound", ->
+
+        it "returns the round number of the highest scoring round", ->
+            expect(@t.bestRound()).toBe '1'
