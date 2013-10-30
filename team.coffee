@@ -36,7 +36,7 @@ class Team
             @score *= 1 + maxBonus * @numBonusRounds()/@numRounds()
 
     bestRound: =>
-        best = 0
+        best = -1
         bestNumber = null
         for number, round of @rounds
             if round.score > best

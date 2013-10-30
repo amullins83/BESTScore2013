@@ -78,3 +78,8 @@ describe "Team", ->
 
         it "returs the score of the highest scoring round", ->
             expect(@t.bestScore()).toBe 100
+
+        it "doesn't break when the score is 0", ->
+            too_bad = new Team 200
+            too_bad.addRound new Match 1, 200, {}, 0, false
+            expect(too_bad.bestScore()).toBe 0
