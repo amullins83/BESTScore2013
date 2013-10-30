@@ -6,11 +6,12 @@ describe "MatchScore", ->
 
     beforeEach ->
             @sc = new ScoreCalculator __dirname + "/testFile.sco"
+            @sc_cpu = new ScoreCalculator __dirname + "/cpu32.sco"
             waitsFor ->
-                @sc.done or @sc.err
-            , "timeout while parsing test file", 5000
+                (@sc.done or @sc.err) and (@sc_cpu.done or @sc_cpu.err)
+            , "timeout while parsing test files", 5000
             runs ->
-                expect(@sc.err).toBeFalsy()
+                expect(@sc.err and @sc_cpu.err).toBeFalsy()
 
     afterEach ->
         runs ->
@@ -86,19 +87,24 @@ describe "MatchScore", ->
 
             it "when inventory equals requirement", ->
                 runs ->
-                    expect(@ms.scoreWithInventory { DLATCH: 4, DECODER: 2, MUX: 1, ADDER: 1 }).toEqual 512
+                    expect(@ms.scoreWithInventory { DLATCH: 4, DECODER: 2, MUX: 1, ADDER: 1 }).toEqual 1142
 
-            it "when inventory exceeds requirement", ->
-                runs ->
-                    expect(@ms.scoreWithInventory { DLATCH: 16, DECODER: 8, MUX: 10, ADDER: 10 }).toEqual 512
 
         describe "adjusts inventory correctly", ->
 
-            it "when making gates", ->
-                runs ->
-                    @ms = new MatchScore @sc.scores.Array.Cluster[0]
-                    @ms.scoreWithInventory {}
-                    expect(@ms.inventory.NAND).toBe 18
+            describe "when making gates", ->
+
+                it "for the original test file", ->
+                    runs ->
+                        @ms = new MatchScore @sc.scores.Array.Cluster[0]
+                        @ms.scoreWithInventory {}
+                        expect(@ms.inventory.NAND).toBe 18
+
+                it "for the new test file", ->
+                    runs ->
+                        @ms = new MatchScore @sc_cpu.scores.Array.Cluster[7]
+                        @ms.scoreWithInventory { NAND: 120 }
+                        expect(@ms.inventory.NAND).toBe 88
 
             describe "when making ICs", ->
 

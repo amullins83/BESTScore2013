@@ -116,13 +116,13 @@ class MatchScore
         @scoreNandGate()
 
     scoreICs: =>
-        @scoreIC IC for IC in ["MUX", "ADDER", "DECODER", "DLATCH"]
+        @scoreComponent IC for IC in ["MUX", "ADDER", "DECODER", "DLATCH"]
 
     scoreCPU: =>
         if @FieldResults.CPU?
-            @scoreCPUcomponent component for component in ["CPU32Bit", "CPU8Bit", "Mem32Bit", "Mem8Bit", "REGISTER", "InstDec", "InstMux", "InstAdd"]
+            @scoreComponent component for component in ["CPU32Bit", "CPU8Bit", "Mem32Bit", "Mem8Bit", "REGISTER", "InstDec", "InstMux", "InstAdd"]
 
-    scoreCPUcomponent: (component)=>
+    scoreComponent: (component)=>
         numComponents = @timesMetRequirements component
         @total += MatchScore.values[component]*numComponents
 
@@ -139,10 +139,6 @@ class MatchScore
         numGates += 3*@FieldResults.NAND.N
         @addToInventory "NAND", numGates
         @total += MatchScore.values.NAND*numGates
-
-    scoreIC: (IC)=>
-        numICs = @timesMetRequirements IC
-        @total += MatchScore.values[IC]*numICs
 
     timesMetRequirements: (unit)=>
         reqs = MatchScore.requirements[unit]
@@ -161,22 +157,21 @@ class MatchScore
                     metNormalReqs = false
                     break
             if metNormalReqs
-                for gate of reqs.Normal
-                    @inventory[gate] -= reqs.Normal[gate]
-                    @FieldResults[unit][gate] -= reqs.Normal[gate]
                 if @FieldResults[unit].Lower
                     number = 1
                 else
                     number = 2
                 @addToInventory unit, number
                 timesMet += number
+                for gate of reqs.Normal
+                    @inventory[gate] -= reqs.Normal[gate]*number
+                    @FieldResults[unit][gate] -= reqs.Normal[gate]
         metNandReqs = true
         while metNandReqs
             unless ((@FieldResults[unit].NAND >= reqs.NAND) and @inventoryContains reqs)
                 metNandReqs = false
                 break
             if metNandReqs
-                @inventory.NAND -= reqs.NAND
                 @FieldResults[unit].NAND -= reqs.NAND
                 if @FieldResults[unit].Lower
                     number = 1
@@ -184,6 +179,7 @@ class MatchScore
                     number = 2
                 @addToInventory unit, number
                 timesMet += number
+                @inventory.NAND -= reqs.NAND*number
         return timesMet
 
     timesMetRequirementsCPU: (unit)=>
@@ -197,12 +193,28 @@ class MatchScore
                     metReqs = false
                     break
             if metReqs
-                timesMet += 1
-                for subReq of fieldReqs
-                    @FieldResults.CPU[subReq] -= fieldReqs[subReq]
-                for subReq of inventoryReqs
-                    @inventory[subReq] -= inventoryReqs[subReq]
-                @addToInventory unit, 1
+                # This is a bit odd because the pieces of a CPU count toward your score in addition to the CPU itself
+                # We need to wait to remove pieces from the field and inventory lists until after the completed CPUs
+                # have been counted                
+                if unit == "CPU32Bit"
+                    timesMet += 1
+                    @addToInventory unit, 1
+                    metReqs = false # it's impossible to make more than 1 CPU in a single match
+                else if unit == "CPU8Bit"
+                    if @inventoryContains MatchScore.requirements["CPU32Bit"]
+                        metReqs = false
+                    else
+                        timesMet += 1
+                        @addToInventory unit, 1
+                        metReqs = false # it's impossible to make more than 1 CPU in a single match
+                else
+                    timesMet += 1
+                    @addToInventory unit, 1
+                    for subReq of fieldReqs
+                        @FieldResults.CPU[subReq] -= fieldReqs[subReq]
+                    for subReq of inventoryReqs
+                        @inventory[subReq] -= inventoryReqs[subReq]
+
         return timesMet
 
     inventoryContains: (quantities)=>

@@ -102,7 +102,21 @@ describe "ScoreCalculator", ->
             runs ->
                 @sc_cpu.calculate()
 
-        it "agrees with the Tournament Software", ->
-            runs ->
-                expect(@sc_cpu.teamScore[1]).toBe 4505.6
+        describe "agrees with the Tournament Software", ->
+
+            it "for final total", ->
+                runs ->
+                    expect(@sc_cpu.teamScore[1]).toBe 4505.6
+
+            it "for first round", ->
+                runs ->
+                    expect(@sc_cpu.matches[1].total).toBe 960
+
+            it "for second round", ->
+                runs ->
+                    expect(@sc_cpu.matches[7].total).toBe 1280
+
+            it "for third round", ->
+                runs ->
+                    expect(@sc_cpu.matches[8].total).toBe 1984
 
