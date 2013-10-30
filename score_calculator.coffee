@@ -38,7 +38,8 @@ class ScoreCalculator
         @teams = []
         for raw_match, index in raw_matches
             @matches.push new MatchScore raw_match
-            @teams.push @matches[index].TeamNumber
+            unless @matches[index].TeamNumber in @teams
+                @teams.push @matches[index].TeamNumber
         @matches
 
     getInventory: =>
