@@ -15,23 +15,25 @@ class ScoreCalculator
         @parse()
 
     parse: ->
-        fs.readFile @scoreFile, (@err, file)=>
-            unless @err
+        fs.readFile @scoreFile, (err, file)=>
+            unless err?
                 XML.parse file.toString(), @calculateOrError
             else
+                @err = err
+                @handleErrors()
                 @done = true
 
     calculateOrError: (@err, @scores)=>
-        unless @err
+        unless @err?
             @calculate()
         else
-            console.dir @err
-        @done = true
+            @handleErrors()
 
     calculate: =>
         @getMatches()
         @getInventory()
         @getScores()
+        @done = true
 
     getMatches: =>
         raw_matches = @scores.Array.Cluster
@@ -49,10 +51,11 @@ class ScoreCalculator
         for match in @matches
             round = match.MatchNumber
             team = match.TeamNumber
-            if round == 1
-                match.scoreWithInventory {}
+            lastRound = @findMatchByTeamBeforeRound(team, round)
+            if lastRound?
+                match.scoreWithInventory copy(lastRound.inventory)
             else
-                match.scoreWithInventory copy(@findMatchByTeamBeforeRound(team, round).inventory)
+                match.scoreWithInventory {}
             @teams[team].addRound match
 
     getScores: =>
@@ -79,5 +82,10 @@ class ScoreCalculator
         for match in @matches
             return match if(match.MatchNumber == round and match.TeamNumber == team)
         return null
+
+    handleErrors: =>
+        for e in [@fileError, @parseError, @err]
+            console.dir e if e?
+        @done = true
 
 module.exports = ScoreCalculator

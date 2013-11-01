@@ -7,7 +7,7 @@ describe "ScoreCalculator", ->
         @sc = new ScoreCalculator(__dirname + "/testFile.sco")
         @millis = 2000
         waitsFor ->
-            @sc.done or @sc.err
+            @sc.done
         , "Parse operation did not complete in #{@millis} ms", @millis
 
     afterEach ->
@@ -67,7 +67,7 @@ describe "ScoreCalculator", ->
                 @sc_cpu = new ScoreCalculator __dirname + "/cpu32.sco"
 
             waitsFor ->
-                @sc_cpu.done or @sc_cpu.err
+                @sc_cpu.done
             , "Failed to parse file", @millis
 
             runs ->
@@ -96,7 +96,7 @@ describe "ScoreCalculator", ->
                 @sc_cpu = new ScoreCalculator __dirname + "/cpu32.sco"
 
             waitsFor ->
-                @sc_cpu.done or @sc_cpu.err
+                @sc_cpu.done
             , "Failed to parse file", @millis
 
             runs ->
@@ -125,9 +125,10 @@ describe "ScoreCalculator", ->
         beforeEach ->
             runs ->
                 @sc_greg = new ScoreCalculator __dirname + "/greg.sco"
+
             waitsFor ->
-                @sc_greg.done or @sc_greg.err
-            , "Failed to parse Greg's file", @millis
+                @sc_greg.done
+            , "Failed to parse Greg file", @millis
 
             runs ->
                 expect(@sc_greg.err).toBeFalsy()
@@ -137,4 +138,4 @@ describe "ScoreCalculator", ->
         it "for final total", ->
             runs ->
                 unless @sc_greg.err?
-                    expect(@sc_greg.teams[1].score).toBe 1000
+                    expect(@sc_greg.teams[251].score).toBe 72
