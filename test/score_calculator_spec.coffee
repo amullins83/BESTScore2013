@@ -120,3 +120,21 @@ describe "ScoreCalculator", ->
                 runs ->
                     expect(@sc_cpu.matches[8].total).toBe 1984
 
+    describe "agrees with Greg's Tournament results", ->
+
+        beforeEach ->
+            runs ->
+                @sc_greg = new ScoreCalculator __dirname + "/greg.sco"
+            waitsFor ->
+                @sc_greg.done or @sc_greg.err
+            , "Failed to parse Greg's file", @millis
+
+            runs ->
+                expect(@sc_greg.err).toBeFalsy()
+                unless @sc_greg.err?
+                    @sc_greg.calculate()
+
+        it "for final total", ->
+            runs ->
+                unless @sc_greg.err?
+                    expect(@sc_greg.teams[1].score).toBe 1000

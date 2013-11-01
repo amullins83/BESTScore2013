@@ -17,7 +17,7 @@ class ScoreCalculator
     parse: ->
         fs.readFile @scoreFile, (@err, file)=>
             unless @err
-                XML.parse file, @calculateOrError
+                XML.parse file.toString(), @calculateOrError
             else
                 @done = true
 
