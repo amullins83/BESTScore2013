@@ -1,5 +1,6 @@
 ScoreCalculator = require __dirname + "/../score_calculator"
 MatchScore = require __dirname + "/../match_score"
+Team = require __dirname + "/../team"
 
 describe "ScoreCalculator", ->
 
@@ -139,3 +140,33 @@ describe "ScoreCalculator", ->
             runs ->
                 unless @sc_greg.err?
                     expect(@sc_greg.teams[251].score).toBe 72
+
+    describe "getTeamsSortedByHighScore", ->
+
+        beforeEach ->
+            runs ->
+                @sc_real = new ScoreCalculator __dirname + "/realGame.sco"
+
+            waitsFor ->
+                @sc_real.done
+            , "Failed to parse real game file", @millis
+
+            runs ->
+                expect(@sc_real.err).toBeFalsy()
+                unless @sc_real.err?
+                    @sc_real.calculate()
+                    @sorted = @sc_real.getTeamsSortedByHighScore()
+
+        it "gets an array", ->
+            runs ->
+                unless @sc_real.err?
+                    expect(@sorted.constructor).toBe Array
+
+        it "gets an array of teams", ->
+            runs ->
+                expect(@sorted[0].constructor).toBe Team
+
+        it "sorts by high score", ->
+            runs ->
+                expect(@sorted[0].bestScore() > @sorted[1].bestScore()).toBe true
+

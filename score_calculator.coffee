@@ -8,6 +8,11 @@ copy = (thing)->
     val[prop] = thing[prop] for prop of thing
     return val
 
+sort_teams_by_highest_score = (a,b)->
+    return -1 if a.bestScore() > b.bestScore()
+    return  1 if a.bestScore() < b.bestScore()
+    return 0
+
 class ScoreCalculator
     constructor: (@scoreFile)->
         @done = false
