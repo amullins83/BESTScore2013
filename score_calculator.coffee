@@ -83,7 +83,7 @@ class ScoreCalculator
             return match if(match.MatchNumber == round and match.TeamNumber == team)
         return null
 
-    getTeamsSortedByHighScore = =>
+    getTeamsSortedByHighScore: =>
         (team for number, team of @teams).sort sort_teams_by_highest_score
 
     handleErrors: =>
