@@ -35,7 +35,14 @@ describe "ScoreCalculator", ->
     describe "getMatches", ->
         beforeEach ->
             runs ->
-                @sc.getMatches()
+                @sc_real = new ScoreCalculator __dirname + "/realGame.sco"
+
+            waitsFor ->
+                @sc_real.done
+            , "Did not parse real game file", @millis
+
+            runs ->
+                @sc_real.getMatches()
 
         it "saves a js object to property 'matches'", ->
             runs ->
@@ -48,6 +55,10 @@ describe "ScoreCalculator", ->
         it "contains an array of MatchScore objects", ->
             runs ->
                 expect(@sc.matches[0].constructor).toBe MatchScore
+
+        it "only collects seeding phase matches", ->
+            runs ->
+                expect(@sc_real.matches.length).toBe 360
     
     describe "find match by team and round", ->
         beforeEach ->

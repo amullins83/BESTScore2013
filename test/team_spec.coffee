@@ -76,7 +76,7 @@ describe "Team", ->
 
     describe "bestScore", ->
 
-        it "returs the score of the highest scoring round", ->
+        it "returns the score of the highest scoring round", ->
             expect(@t.bestScore()).toBe 100
 
         it "doesn't break when the score is 0", ->

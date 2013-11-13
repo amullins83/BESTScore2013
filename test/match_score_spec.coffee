@@ -139,3 +139,18 @@ describe "MatchScore", ->
 
                 it "increases the number of CPUs", ->
                     expect(@ms.inventory.CPU8Bit).toBe 1
+
+            describe "phase", ->
+
+                beforeEach ->
+                    runs ->
+                        @ms = new MatchScore @sc.scores.Array.Cluster[17]
+                        @ms.scoreWithInventory { DLATCH: 4, DECODER: 2, MUX: 1, ADDER: 1 }
+
+                afterEach ->
+                    runs ->
+                        delete @ms
+
+                it "reports the phase number from the XML file", ->
+                    runs ->
+                        expect(@ms.phase).toBe 0

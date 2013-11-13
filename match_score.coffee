@@ -9,6 +9,7 @@ class MatchScore
         @CurrentMatchPhase = ["Seeding", "WildCard", "Semifinal", "Final"][parseInt @raw_match.U16[1].Val]
         @FieldResults = new FieldResults @raw_match.Cluster[1].Cluster
         @Bonus = @FieldResults.Bonus
+        @phase = parseInt @raw_match.U16[1].Val
 
     @values:
         AND:        10

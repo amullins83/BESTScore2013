@@ -46,7 +46,7 @@ class ScoreCalculator
         @teams = {}
         for raw_match, index in raw_matches
             this_match = new MatchScore raw_match
-            @matches.push this_match
+            @matches.push this_match if this_match.phase == 0
             num = this_match.TeamNumber
             unless num of @teams
                 @teams[num] = new Team num
